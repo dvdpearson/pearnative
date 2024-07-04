@@ -31,6 +31,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "dd182b78-4639-4153-a2d9-e0a49c48cb82"
+      }
+    },
+    "owner": "dvdpearson"
   }
 }
