@@ -1,12 +1,6 @@
 import type { PropsWithChildren, ReactElement } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
-import Animated, {
-  interpolate,
-  useAnimatedRef,
-  useAnimatedStyle,
-  useScrollViewOffset,
-} from 'react-native-reanimated';
-
+import React from 'react';
+import { StyleSheet, useColorScheme, RefreshControl, SafeAreaView, ScrollView } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 
 const HEADER_HEIGHT = 250;
@@ -18,44 +12,26 @@ type Props = PropsWithChildren<{
 
 export default function ParallaxScrollView({
   children,
-  headerImage,
-  headerBackgroundColor,
+  onPullDownRefresh
 }: Props) {
-  const colorScheme = useColorScheme() ?? 'light';
-  const scrollRef = useAnimatedRef<Animated.ScrollView>();
-  const scrollOffset = useScrollViewOffset(scrollRef);
+  const [refreshing, setRefreshing] = React.useState(false);
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: interpolate(
-            scrollOffset.value,
-            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
-            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
-          ),
-        },
-        {
-          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
-        },
-      ],
-    };
-  });
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    onPullDownRefresh();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   return (
-    <ThemedView style={styles.container}>
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-        <Animated.View
-          style={[
-            styles.header,
-            { backgroundColor: headerBackgroundColor[colorScheme] },
-            headerAnimatedStyle,
-          ]}>
-          {headerImage}
-        </Animated.View>
-        <ThemedView style={styles.content}>{children}</ThemedView>
-      </Animated.ScrollView>
-    </ThemedView>
+    <SafeAreaView style={styles.container}>
+      <ScrollView refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        <ThemedView>{children}</ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -64,12 +40,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: 250,
+    height: 100,
     overflow: 'hidden',
   },
   content: {
     flex: 1,
-    padding: 32,
+    padding: 0,
     gap: 16,
     overflow: 'hidden',
   },
